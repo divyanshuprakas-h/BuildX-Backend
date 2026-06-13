@@ -1,4 +1,5 @@
 use crate::models::blueprint::{ApiRouteBlueprint, BlueprintResponse, PageBlueprint};
+use crate::models::file_plan::{FilePlanItem, FrontendPlanResponse};
 
 use crate::models::intent::IntentResponse;
 
@@ -53,6 +54,20 @@ pub fn build_blueprint_response(prompt_input: &str) -> BlueprintResponse {
         api_routes,
         database_tables,
         summary: "Project blueprint generated successfully.".to_string(),
+    }
+}
+
+pub fn build_frontend_plan_response(prompt_input: &str) -> FrontendPlanResponse {
+    let prompt = prompt_input.to_lowercase();
+
+    let project_type = detect_project_type(&prompt);
+    let files = generate_frontend_files(&prompt, project_type);
+
+    FrontendPlanResponse {
+        framework: "React + Vite".to_string(),
+        styling: "CSS Modules or Tailwind CSS".to_string(),
+        files,
+        summary: "Frontend file plan generated successfully.".to_string(),
     }
 }
 
@@ -367,4 +382,202 @@ fn generate_database_tables(prompt: &str, project_type: &str) -> Vec<String> {
     }
 
     tables
+}
+
+fn generate_frontend_files(prompt: &str, project_type: &str) -> Vec<FilePlanItem> {
+    let mut files = Vec::new();
+
+    files.push(FilePlanItem {
+        path: "src/main.jsx".to_string(),
+        file_type: "entry".to_string(),
+        purpose: "React application entry point".to_string(),
+    });
+
+    files.push(FilePlanItem {
+        path: "src/App.jsx".to_string(),
+        file_type: "app".to_string(),
+        purpose: "Main app component and route setup".to_string(),
+    });
+
+    files.push(FilePlanItem {
+        path: "src/styles/global.css".to_string(),
+        file_type: "style".to_string(),
+        purpose: "Global styles for the application".to_string(),
+    });
+
+    files.push(FilePlanItem {
+        path: "src/pages/Home.jsx".to_string(),
+        file_type: "page".to_string(),
+        purpose: "Home page of the application".to_string(),
+    });
+
+    files.push(FilePlanItem {
+        path: "src/components/Navbar.jsx".to_string(),
+        file_type: "component".to_string(),
+        purpose: "Top navigation component".to_string(),
+    });
+
+    files.push(FilePlanItem {
+        path: "src/components/Footer.jsx".to_string(),
+        file_type: "component".to_string(),
+        purpose: "Footer component".to_string(),
+    });
+
+    if has_auth(prompt) {
+        files.push(FilePlanItem {
+            path: "src/pages/Login.jsx".to_string(),
+            file_type: "page".to_string(),
+            purpose: "Login page".to_string(),
+        });
+
+        files.push(FilePlanItem {
+            path: "src/pages/Signup.jsx".to_string(),
+            file_type: "page".to_string(),
+            purpose: "Signup page".to_string(),
+        });
+
+        files.push(FilePlanItem {
+            path: "src/components/LoginForm.jsx".to_string(),
+            file_type: "component".to_string(),
+            purpose: "Reusable login form component".to_string(),
+        });
+
+        files.push(FilePlanItem {
+            path: "src/components/SignupForm.jsx".to_string(),
+            file_type: "component".to_string(),
+            purpose: "Reusable signup form component".to_string(),
+        });
+    }
+
+    if project_type == "todo_app" {
+        files.push(FilePlanItem {
+            path: "src/pages/Tasks.jsx".to_string(),
+            file_type: "page".to_string(),
+            purpose: "Task management page".to_string(),
+        });
+
+        files.push(FilePlanItem {
+            path: "src/components/TaskInput.jsx".to_string(),
+            file_type: "component".to_string(),
+            purpose: "Input component for creating tasks".to_string(),
+        });
+
+        files.push(FilePlanItem {
+            path: "src/components/TaskList.jsx".to_string(),
+            file_type: "component".to_string(),
+            purpose: "List component for showing tasks".to_string(),
+        });
+
+        files.push(FilePlanItem {
+            path: "src/components/TaskItem.jsx".to_string(),
+            file_type: "component".to_string(),
+            purpose: "Single task item component".to_string(),
+        });
+    }
+
+    if project_type == "dashboard" {
+        files.push(FilePlanItem {
+            path: "src/pages/Dashboard.jsx".to_string(),
+            file_type: "page".to_string(),
+            purpose: "Dashboard page".to_string(),
+        });
+
+        files.push(FilePlanItem {
+            path: "src/components/Sidebar.jsx".to_string(),
+            file_type: "component".to_string(),
+            purpose: "Dashboard sidebar navigation".to_string(),
+        });
+
+        files.push(FilePlanItem {
+            path: "src/components/DashboardCards.jsx".to_string(),
+            file_type: "component".to_string(),
+            purpose: "Cards for showing dashboard stats".to_string(),
+        });
+
+        files.push(FilePlanItem {
+            path: "src/components/AnalyticsChart.jsx".to_string(),
+            file_type: "component".to_string(),
+            purpose: "Chart component for analytics".to_string(),
+        });
+    }
+
+    if project_type == "blog_app" {
+        files.push(FilePlanItem {
+            path: "src/pages/Blog.jsx".to_string(),
+            file_type: "page".to_string(),
+            purpose: "Blog listing page".to_string(),
+        });
+
+        files.push(FilePlanItem {
+            path: "src/pages/CreatePost.jsx".to_string(),
+            file_type: "page".to_string(),
+            purpose: "Create blog post page".to_string(),
+        });
+
+        files.push(FilePlanItem {
+            path: "src/components/PostCard.jsx".to_string(),
+            file_type: "component".to_string(),
+            purpose: "Blog post preview card".to_string(),
+        });
+
+        files.push(FilePlanItem {
+            path: "src/components/PostEditor.jsx".to_string(),
+            file_type: "component".to_string(),
+            purpose: "Blog post editor component".to_string(),
+        });
+    }
+
+    if project_type == "ecommerce" {
+        files.push(FilePlanItem {
+            path: "src/pages/Products.jsx".to_string(),
+            file_type: "page".to_string(),
+            purpose: "Product listing page".to_string(),
+        });
+
+        files.push(FilePlanItem {
+            path: "src/pages/Cart.jsx".to_string(),
+            file_type: "page".to_string(),
+            purpose: "Shopping cart page".to_string(),
+        });
+
+        files.push(FilePlanItem {
+            path: "src/components/ProductCard.jsx".to_string(),
+            file_type: "component".to_string(),
+            purpose: "Product card component".to_string(),
+        });
+
+        files.push(FilePlanItem {
+            path: "src/components/CartItem.jsx".to_string(),
+            file_type: "component".to_string(),
+            purpose: "Cart item component".to_string(),
+        });
+    }
+
+    if project_type == "portfolio" {
+        files.push(FilePlanItem {
+            path: "src/pages/Projects.jsx".to_string(),
+            file_type: "page".to_string(),
+            purpose: "Portfolio projects page".to_string(),
+        });
+
+        files.push(FilePlanItem {
+            path: "src/pages/Contact.jsx".to_string(),
+            file_type: "page".to_string(),
+            purpose: "Contact page".to_string(),
+        });
+
+        files.push(FilePlanItem {
+            path: "src/components/ProjectCard.jsx".to_string(),
+            file_type: "component".to_string(),
+            purpose: "Project showcase card".to_string(),
+        });
+
+        files.push(FilePlanItem {
+            path: "src/components/ContactForm.jsx".to_string(),
+            file_type: "component".to_string(),
+            purpose: "Contact form component".to_string(),
+        });
+    }
+
+    files
 }
