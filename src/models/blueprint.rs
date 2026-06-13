@@ -2,7 +2,7 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 #[derive(Debug, Serialize, ToSchema)]
-pub struct PageBlueprint{
+pub struct PageBlueprint {
     pub name: String,
     pub path: String,
     pub purpose: String,

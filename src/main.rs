@@ -1,14 +1,15 @@
 mod app;
+mod docs;
 mod models;
 mod routes;
-mod docs;
+mod services;
 
 use std::net::SocketAddr;
 
 #[tokio::main]
 async fn main() {
     let app = app::create_app();
-    let addr = SocketAddr::from(([127,0,0,1], 8000));
+    let addr = SocketAddr::from(([127, 0, 0, 1], 8000));
 
     println!("BuildX backend running on http://{}", addr);
     println!("Swagger Docs running on http://127.0.0.1:8000/docs");
@@ -17,7 +18,5 @@ async fn main() {
         .await
         .expect("Failed to bind Server Address");
 
-    axum::serve(listener, app)
-        .await
-        .expect("Server failed");
+    axum::serve(listener, app).await.expect("Server failed");
 }

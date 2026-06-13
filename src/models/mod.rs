@@ -1,2 +1,2 @@
-pub mod intent;
 pub mod blueprint;
+pub mod intent;

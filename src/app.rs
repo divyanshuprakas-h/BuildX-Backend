@@ -1,6 +1,6 @@
 use axum::{
-    routing::{get, post},
     Router,
+    routing::{get, post},
 };
 
 use utoipa::OpenApi;
@@ -18,9 +18,5 @@ pub fn create_app() -> Router {
         .route("/health", get(health_check))
         .route("/ai/detect-intent", post(detect_intent))
         .route("/ai/blueprint", post(generate_blueprint))
-        .merge(
-            SwaggerUi::new("/docs")
-                .url("/api-docs/openapi.json", ApiDoc::openapi())
-        )
-
+        .merge(SwaggerUi::new("/docs").url("/api-docs/openapi.json", ApiDoc::openapi()))
 }
