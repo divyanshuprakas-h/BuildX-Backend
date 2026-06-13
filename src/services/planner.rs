@@ -1,6 +1,7 @@
 use crate::models::backend_plan::{BackendPlanItem, BackendPlanResponse};
 use crate::models::blueprint::{ApiRouteBlueprint, BlueprintResponse, PageBlueprint};
 use crate::models::file_plan::{FilePlanItem, FrontendPlanResponse};
+use crate::models::project_plan::ProjectPlanResponse;
 
 use crate::models::intent::IntentResponse;
 
@@ -86,6 +87,21 @@ pub fn build_backend_plan_response(prompt_input: &str) -> BackendPlanResponse {
         files,
         dependencies,
         summary: "Backend file plan generated successfully.".to_string(),
+    }
+}
+
+pub fn build_project_plan_response(prompt_input: &str) -> ProjectPlanResponse {
+    let intent = build_intent_response(prompt_input);
+    let blueprint = build_blueprint_response(prompt_input);
+    let frontend_plan = build_frontend_plan_response(prompt_input);
+    let backend_plan = build_backend_plan_response(prompt_input);
+
+    ProjectPlanResponse {
+        intent,
+        blueprint,
+        frontend_plan,
+        backend_plan,
+        summary: "Full project plan generated successfully.".to_string(),
     }
 }
 

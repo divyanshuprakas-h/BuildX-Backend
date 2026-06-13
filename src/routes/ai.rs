@@ -4,9 +4,10 @@ use crate::models::backend_plan::BackendPlanResponse;
 use crate::models::blueprint::BlueprintResponse;
 use crate::models::file_plan::FrontendPlanResponse;
 use crate::models::intent::{IntentRequest, IntentResponse};
+use crate::models::project_plan::ProjectPlanResponse;
 use crate::services::planner::{
     build_backend_plan_response, build_blueprint_response, build_frontend_plan_response,
-    build_intent_response,
+    build_intent_response, build_project_plan_response,
 };
 
 #[utoipa::path(
@@ -87,5 +88,26 @@ pub async fn generate_backend_plan(
     Json(payload): Json<IntentRequest>,
 ) -> Json<BackendPlanResponse> {
     let response = build_backend_plan_response(&payload.prompt);
+    Json(response)
+}
+
+#[utoipa::path(
+    post,
+    path = "/ai/project-plan",
+    request_body = IntentRequest,
+    responses(
+        (
+            status = 200,
+            description = "Generate full project plan from user prompt",
+            body = ProjectPlanResponse
+        )
+    ),
+    tag = "BuildX AI"
+)]
+
+pub async fn generate_project_plan(
+    Json(payload): Json<IntentRequest>,
+) -> Json<ProjectPlanResponse> {
+    let response = build_project_plan_response(&payload.prompt);
     Json(response)
 }

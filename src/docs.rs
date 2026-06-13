@@ -4,10 +4,11 @@ use crate::models::backend_plan::{BackendPlanItem, BackendPlanResponse};
 use crate::models::blueprint::{ApiRouteBlueprint, BlueprintResponse, PageBlueprint};
 use crate::models::file_plan::{FilePlanItem, FrontendPlanResponse};
 use crate::models::intent::{IntentRequest, IntentResponse};
+use crate::models::project_plan::ProjectPlanResponse;
 
 use crate::routes::ai::{
     __path_detect_intent, __path_generate_backend_plan, __path_generate_blueprint,
-    __path_generate_frontend_plan,
+    __path_generate_frontend_plan, __path_generate_project_plan,
 };
 use crate::routes::health::__path_health_check;
 
@@ -18,7 +19,8 @@ use crate::routes::health::__path_health_check;
         detect_intent,
         generate_blueprint,
         generate_frontend_plan,
-        generate_backend_plan
+        generate_backend_plan,
+        generate_project_plan,
     ),
     components(
         schemas(
@@ -30,7 +32,8 @@ use crate::routes::health::__path_health_check;
             FilePlanItem,
             FrontendPlanResponse,
             BackendPlanItem,
-            BackendPlanResponse
+            BackendPlanResponse,
+            ProjectPlanResponse,
         )
     ),
     tags(
