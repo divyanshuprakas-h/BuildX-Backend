@@ -21,3 +21,4 @@ pub fn create_app() -> Router {
         .route("/ai/frontend-plan", post(generate_frontend_plan))
         .merge(SwaggerUi::new("/docs").url("/api-docs/openapi.json", ApiDoc::openapi()))
 }
+
