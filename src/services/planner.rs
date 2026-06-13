@@ -1,3 +1,4 @@
+use crate::models::backend_plan::{BackendPlanItem, BackendPlanResponse};
 use crate::models::blueprint::{ApiRouteBlueprint, BlueprintResponse, PageBlueprint};
 use crate::models::file_plan::{FilePlanItem, FrontendPlanResponse};
 
@@ -68,6 +69,23 @@ pub fn build_frontend_plan_response(prompt_input: &str) -> FrontendPlanResponse 
         styling: "CSS Modules or Tailwind CSS".to_string(),
         files,
         summary: "Frontend file plan generated successfully.".to_string(),
+    }
+}
+
+pub fn build_backend_plan_response(prompt_input: &str) -> BackendPlanResponse {
+    let prompt = prompt_input.to_lowercase();
+
+    let project_type = detect_project_type(&prompt);
+    let database = detect_database_choice(&prompt);
+    let files = generate_backend_files(&prompt, project_type);
+    let dependencies = generate_backend_dependencies(&prompt);
+
+    BackendPlanResponse {
+        framework: "Rust + Axum".to_string(),
+        database,
+        files,
+        dependencies,
+        summary: "Backend file plan generated successfully.".to_string(),
     }
 }
 
@@ -576,6 +594,185 @@ fn generate_frontend_files(prompt: &str, project_type: &str) -> Vec<FilePlanItem
             path: "src/components/ContactForm.jsx".to_string(),
             file_type: "component".to_string(),
             purpose: "Contact form component".to_string(),
+        });
+    }
+
+    files
+}
+
+fn detect_database_choice(prompt: &str) -> String {
+    if has_database(prompt) {
+        "PostgreSQL".to_string()
+    } else {
+        "None".to_string()
+    }
+}
+
+fn generate_backend_dependencies(prompt: &str) -> Vec<String> {
+    let mut dependencies = Vec::new();
+
+    dependencies.push("axum".to_string());
+    dependencies.push("tokio".to_string());
+    dependencies.push("serde".to_string());
+    dependencies.push("serde_json".to_string());
+
+    if has_auth(prompt) {
+        dependencies.push("jsonwebtoken".to_string());
+        dependencies.push("bcrypt".to_string());
+    }
+
+    if has_database(prompt) {
+        dependencies.push("sqlx".to_string());
+        dependencies.push("dotenvy".to_string());
+    }
+
+    dependencies
+}
+
+fn generate_backend_files(prompt: &str, project_type: &str) -> Vec<BackendPlanItem> {
+    let mut files = Vec::new();
+
+    files.push(BackendPlanItem {
+        path: "src/main.rs".to_string(),
+        file_type: "entry".to_string(),
+        purpose: "Backend server entry point".to_string(),
+    });
+
+    files.push(BackendPlanItem {
+        path: "src/app.rs".to_string(),
+        file_type: "app".to_string(),
+        purpose: "Creates Axum router and connects routes".to_string(),
+    });
+
+    files.push(BackendPlanItem {
+        path: "src/routes/mod.rs".to_string(),
+        file_type: "module".to_string(),
+        purpose: "Exports all route modules".to_string(),
+    });
+
+    files.push(BackendPlanItem {
+        path: "src/routes/health.rs".to_string(),
+        file_type: "route".to_string(),
+        purpose: "Health check API route".to_string(),
+    });
+
+    files.push(BackendPlanItem {
+        path: "src/models/mod.rs".to_string(),
+        file_type: "module".to_string(),
+        purpose: "Exports all model modules".to_string(),
+    });
+
+    files.push(BackendPlanItem {
+        path: "src/services/mod.rs".to_string(),
+        file_type: "module".to_string(),
+        purpose: "Exports all service modules".to_string(),
+    });
+
+    if has_auth(prompt) {
+        files.push(BackendPlanItem {
+            path: "src/routes/auth.rs".to_string(),
+            file_type: "route".to_string(),
+            purpose: "Signup, login, and authentication routes".to_string(),
+        });
+
+        files.push(BackendPlanItem {
+            path: "src/models/user.rs".to_string(),
+            file_type: "model".to_string(),
+            purpose: "User request and response structs".to_string(),
+        });
+
+        files.push(BackendPlanItem {
+            path: "src/services/auth_service.rs".to_string(),
+            file_type: "service".to_string(),
+            purpose: "Authentication business logic".to_string(),
+        });
+    }
+
+    if has_database(prompt) {
+        files.push(BackendPlanItem {
+            path: "src/db/mod.rs".to_string(),
+            file_type: "database".to_string(),
+            purpose: "Database connection module".to_string(),
+        });
+    }
+
+    if project_type == "todo_app" {
+        files.push(BackendPlanItem {
+            path: "src/routes/tasks.rs".to_string(),
+            file_type: "route".to_string(),
+            purpose: "Task CRUD API routes".to_string(),
+        });
+
+        files.push(BackendPlanItem {
+            path: "src/models/task.rs".to_string(),
+            file_type: "model".to_string(),
+            purpose: "Task data structs".to_string(),
+        });
+
+        files.push(BackendPlanItem {
+            path: "src/services/task_service.rs".to_string(),
+            file_type: "service".to_string(),
+            purpose: "Task management business logic".to_string(),
+        });
+    }
+
+    if project_type == "blog_app" {
+        files.push(BackendPlanItem {
+            path: "src/routes/posts.rs".to_string(),
+            file_type: "route".to_string(),
+            purpose: "Blog post CRUD API routes".to_string(),
+        });
+
+        files.push(BackendPlanItem {
+            path: "src/models/post.rs".to_string(),
+            file_type: "model".to_string(),
+            purpose: "Blog post data structs".to_string(),
+        });
+
+        files.push(BackendPlanItem {
+            path: "src/services/post_service.rs".to_string(),
+            file_type: "service".to_string(),
+            purpose: "Blog post business logic".to_string(),
+        });
+    }
+
+    if project_type == "dashboard" || prompt.contains("analytics") {
+        files.push(BackendPlanItem {
+            path: "src/routes/analytics.rs".to_string(),
+            file_type: "route".to_string(),
+            purpose: "Analytics API routes".to_string(),
+        });
+
+        files.push(BackendPlanItem {
+            path: "src/services/analytics_service.rs".to_string(),
+            file_type: "service".to_string(),
+            purpose: "Analytics calculation logic".to_string(),
+        });
+    }
+
+    if project_type == "ecommerce" {
+        files.push(BackendPlanItem {
+            path: "src/routes/products.rs".to_string(),
+            file_type: "route".to_string(),
+            purpose: "Product API routes".to_string(),
+        });
+
+        files.push(BackendPlanItem {
+            path: "src/routes/orders.rs".to_string(),
+            file_type: "route".to_string(),
+            purpose: "Order API routes".to_string(),
+        });
+
+        files.push(BackendPlanItem {
+            path: "src/models/product.rs".to_string(),
+            file_type: "model".to_string(),
+            purpose: "Product data structs".to_string(),
+        });
+
+        files.push(BackendPlanItem {
+            path: "src/services/product_service.rs".to_string(),
+            file_type: "service".to_string(),
+            purpose: "Product business logic".to_string(),
         });
     }
 

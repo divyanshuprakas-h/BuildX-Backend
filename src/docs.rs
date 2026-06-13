@@ -1,11 +1,13 @@
 use utoipa::OpenApi;
 
+use crate::models::backend_plan::{BackendPlanItem, BackendPlanResponse};
 use crate::models::blueprint::{ApiRouteBlueprint, BlueprintResponse, PageBlueprint};
 use crate::models::file_plan::{FilePlanItem, FrontendPlanResponse};
 use crate::models::intent::{IntentRequest, IntentResponse};
 
 use crate::routes::ai::{
-    __path_detect_intent, __path_generate_blueprint, __path_generate_frontend_plan,
+    __path_detect_intent, __path_generate_backend_plan, __path_generate_blueprint,
+    __path_generate_frontend_plan,
 };
 use crate::routes::health::__path_health_check;
 
@@ -15,7 +17,8 @@ use crate::routes::health::__path_health_check;
         health_check,
         detect_intent,
         generate_blueprint,
-        generate_frontend_plan
+        generate_frontend_plan,
+        generate_backend_plan
     ),
     components(
         schemas(
@@ -25,7 +28,9 @@ use crate::routes::health::__path_health_check;
             ApiRouteBlueprint,
             BlueprintResponse,
             FilePlanItem,
-            FrontendPlanResponse
+            FrontendPlanResponse,
+            BackendPlanItem,
+            BackendPlanResponse
         )
     ),
     tags(
