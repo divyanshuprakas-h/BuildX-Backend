@@ -2,6 +2,20 @@ use axum::Json;
 
 use crate::models::intent::{IntentRequest, IntentResponse};
 
+#[utoipa::path(
+    post,
+    path = "/ai/detect-intent",
+    request_body = IntentRequest,
+    responses(
+        (
+            status = 200,
+            description = "Detect project intent from user prompt",
+            body = IntentResponse
+        )
+    ),
+    tag = "BuildX AI"
+)]
+
 pub async fn detect_intent(Json(payload): Json<IntentRequest>) -> Json<IntentResponse> {
     let prompt = payload.prompt.to_lowercase();
 

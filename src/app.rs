@@ -3,6 +3,10 @@ use axum::{
     Router,
 };
 
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
+
+use crate::docs::ApiDoc;
 use crate::routes::{
     ai::detect_intent,
     health::health_check,
@@ -10,7 +14,12 @@ use crate::routes::{
 
 pub fn create_app() -> Router {
     Router::new()
+        .route("/", get(health_check))
         .route("/health", get(health_check))
         .route("/ai/detect-intent", post(detect_intent))
+        .merge(
+            SwaggerUi::new("/docs")
+                .url("/api-docs/openapi.json", ApiDoc::openapi())
+        )
 
 }

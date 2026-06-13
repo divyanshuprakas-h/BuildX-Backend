@@ -1,6 +1,7 @@
 mod app;
 mod models;
 mod routes;
+mod docs;
 
 use std::net::SocketAddr;
 
@@ -10,6 +11,7 @@ async fn main() {
     let addr = SocketAddr::from(([127,0,0,1], 8000));
 
     println!("BuildX backend running on http://{}", addr);
+    println!("Swagger Docs running on http://127.0.0.1:8000/docs");
 
     let listener = tokio::net::TcpListener::bind(addr)
         .await
