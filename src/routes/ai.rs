@@ -3,11 +3,12 @@ use axum::Json;
 use crate::models::backend_plan::BackendPlanResponse;
 use crate::models::blueprint::BlueprintResponse;
 use crate::models::file_plan::FrontendPlanResponse;
+use crate::models::generated_code::CodePreviewResponse;
 use crate::models::intent::{IntentRequest, IntentResponse};
 use crate::models::project_plan::ProjectPlanResponse;
 use crate::services::planner::{
-    build_backend_plan_response, build_blueprint_response, build_frontend_plan_response,
-    build_intent_response, build_project_plan_response,
+    build_backend_plan_response, build_blueprint_response, build_code_preview_response,
+    build_frontend_plan_response, build_intent_response, build_project_plan_response,
 };
 
 #[utoipa::path(
@@ -109,5 +110,26 @@ pub async fn generate_project_plan(
     Json(payload): Json<IntentRequest>,
 ) -> Json<ProjectPlanResponse> {
     let response = build_project_plan_response(&payload.prompt);
+    Json(response)
+}
+
+#[utoipa::path(
+    post,
+    path = "/ai/code-preview",
+    request_body = IntentRequest,
+    responses(
+        (
+            status = 200,
+            description = "Generate starter code preview from user prompt",
+            body = CodePreviewResponse
+        )
+    ),
+    tag = "BuildX AI"
+)]
+
+pub async fn generate_code_preview(
+    Json(payload): Json<IntentRequest>,
+) -> Json<CodePreviewResponse> {
+    let response = build_code_preview_response(&payload.prompt);
     Json(response)
 }

@@ -1,6 +1,9 @@
+use indoc::indoc;
+
 use crate::models::backend_plan::{BackendPlanItem, BackendPlanResponse};
 use crate::models::blueprint::{ApiRouteBlueprint, BlueprintResponse, PageBlueprint};
 use crate::models::file_plan::{FilePlanItem, FrontendPlanResponse};
+use crate::models::generated_code::{CodePreviewResponse, GeneratedFile};
 use crate::models::project_plan::ProjectPlanResponse;
 
 use crate::models::intent::IntentResponse;
@@ -102,6 +105,18 @@ pub fn build_project_plan_response(prompt_input: &str) -> ProjectPlanResponse {
         frontend_plan,
         backend_plan,
         summary: "Full project plan generated successfully.".to_string(),
+    }
+}
+
+pub fn build_code_preview_response(prompt_input: &str) -> CodePreviewResponse {
+    let prompt = prompt_input.to_lowercase();
+    let project_type = detect_project_type(&prompt);
+
+    let files = generate_code_preview_files(&prompt, project_type);
+
+    CodePreviewResponse {
+        files,
+        summary: "Code preview generated successfully.".to_string(),
     }
 }
 
@@ -789,6 +804,234 @@ fn generate_backend_files(prompt: &str, project_type: &str) -> Vec<BackendPlanIt
             path: "src/services/product_service.rs".to_string(),
             file_type: "service".to_string(),
             purpose: "Product business logic".to_string(),
+        });
+    }
+
+    files
+}
+
+fn generate_code_preview_files(prompt: &str, project_type: &str) -> Vec<GeneratedFile> {
+    let mut files = Vec::new();
+
+    files.push(GeneratedFile {
+        path: "src/main.jsx".to_string(),
+        language: "jsx".to_string(),
+        content: indoc! { r#"
+                        import React from "react";
+                        import ReactDOM from "react-dom/client";
+                        import App from "./App";
+                        import "./styles/global.css";
+
+                        ReactDOM.createRoot(document.getElementById("root")).render(
+                        <React.StrictMode>
+                            <App />
+                        </React.StrictMode>
+                        );
+                    "# }
+        .to_string(),
+    });
+
+    files.push(GeneratedFile {
+        path: "src/styles/global.css".to_string(),
+        language: "css".to_string(),
+        content: indoc! {r#"* {
+            box-sizing: border-box;
+            }
+
+            body {
+            margin: 0;
+            font-family: system-ui, sans-serif;
+            background: #f8fafc;
+            color: #0f172a;
+            }
+
+            button {
+            cursor: pointer;
+            }
+        "#}
+        .to_string(),
+    });
+
+    if project_type == "todo_app" {
+        files.push(GeneratedFile {
+            path: "src/App.jsx".to_string(),
+            language: "jsx".to_string(),
+            content: indoc! {r#"
+                            import { useState } from "react";
+                            import "./styles/todo.css";
+
+                            function App() {
+                            const [tasks, setTasks] = useState([]);
+                            const [taskText, setTaskText] = useState("");
+
+                            const addTask = () => {
+                                if (!taskText.trim()) return;
+
+                                setTasks([
+                                ...tasks,
+                                {
+                                    id: Date.now(),
+                                    title: taskText,
+                                    completed: false,
+                                },
+                                ]);
+
+                                setTaskText("");
+                            };
+
+                            const toggleTask = (id) => {
+                                setTasks(
+                                tasks.map((task) =>
+                                    task.id === id
+                                    ? { ...task, completed: !task.completed }
+                                    : task
+                                )
+                                );
+                            };
+
+                            return (
+                                <main className="app">
+                                <section className="card">
+                                    <h1>BuildX Todo App</h1>
+                                    <p>Create and manage your daily tasks.</p>
+
+                                    <div className="task-form">
+                                    <input
+                                        value={taskText}
+                                        onChange={(event) => setTaskText(event.target.value)}
+                                        placeholder="Enter a task"
+                                    />
+                                    <button onClick={addTask}>Add Task</button>
+                                    </div>
+
+                                    <ul className="task-list">
+                                    {tasks.map((task) => (
+                                        <li key={task.id}>
+                                        <label>
+                                            <input
+                                            type="checkbox"
+                                            checked={task.completed}
+                                            onChange={() => toggleTask(task.id)}
+                                            />
+                                            <span className={task.completed ? "done" : ""}>
+                                            {task.title}
+                                            </span>
+                                        </label>
+                                        </li>
+                                    ))}
+                                    </ul>
+                                </section>
+                                </main>
+                            );
+                            }
+
+                            export default App;
+                            "#}
+            .to_string(),
+        });
+
+        files.push(GeneratedFile {
+            path: "src/styles/todo.css".to_string(),
+            language: "css".to_string(),
+            content: indoc! {r#".app {
+                        min-height: 100vh;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 24px;
+                        }
+
+                        .card {
+                        width: 100%;
+                        max-width: 520px;
+                        background: white;
+                        border-radius: 18px;
+                        padding: 28px;
+                        box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
+                        }
+
+                        .task-form {
+                        display: flex;
+                        gap: 12px;
+                        margin-top: 20px;
+                        }
+
+                        .task-form input {
+                        flex: 1;
+                        padding: 12px 14px;
+                        border: 1px solid #cbd5e1;
+                        border-radius: 10px;
+                        }
+
+                        .task-form button {
+                        padding: 12px 16px;
+                        border: none;
+                        border-radius: 10px;
+                        background: #0f172a;
+                        color: white;
+                        }
+
+                        .task-list {
+                        list-style: none;
+                        padding: 0;
+                        margin-top: 24px;
+                        }
+
+                        .task-list li {
+                        padding: 12px 0;
+                        border-bottom: 1px solid #e2e8f0;
+                        }
+
+                        .done {
+                        text-decoration: line-through;
+                        color: #64748b;
+                        }
+                        "#}
+            .to_string(),
+        });
+    } else {
+        files.push(GeneratedFile {
+            path: "src/App.jsx".to_string(),
+            language: "jsx".to_string(),
+            content: indoc! {r#"
+            function App() {
+            return (
+                <main className="app">
+                <section className="card">
+                    <h1>BuildX Generated App</h1>
+                    <p>Your app starter code is ready.</p>
+                </section>
+                </main>
+            );
+            }
+
+            export default App;
+            "#}
+            .to_string(),
+        });
+    }
+
+    if has_auth(prompt) {
+        files.push(GeneratedFile {
+            path: "src/components/LoginForm.jsx".to_string(),
+            language: "jsx".to_string(),
+            content: indoc! {r#"
+            function LoginForm() {
+            return (
+                <form>
+                <h2>Login</h2>
+
+                <input type="email" placeholder="Email" />
+                <input type="password" placeholder="Password" />
+
+                <button type="submit">Login</button>
+                </form>
+            );
+            }
+
+            export default LoginForm;
+            "#}
+            .to_string(),
         });
     }
 

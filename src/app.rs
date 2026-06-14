@@ -9,8 +9,8 @@ use utoipa_swagger_ui::SwaggerUi;
 use crate::docs::ApiDoc;
 use crate::routes::{
     ai::{
-        detect_intent, generate_backend_plan, generate_blueprint, generate_frontend_plan,
-        generate_project_plan,
+        detect_intent, generate_backend_plan, generate_blueprint, generate_code_preview,
+        generate_frontend_plan, generate_project_plan,
     },
     health::health_check,
 };
@@ -24,5 +24,6 @@ pub fn create_app() -> Router {
         .route("/ai/frontend-plan", post(generate_frontend_plan))
         .route("/ai/backend-plan", post(generate_backend_plan))
         .route("/ai/project-plan", post(generate_project_plan))
+        .route("/ai/code-preview", post(generate_code_preview))
         .merge(SwaggerUi::new("/docs").url("/api-docs/openapi.json", ApiDoc::openapi()))
 }
