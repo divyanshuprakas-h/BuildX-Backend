@@ -1,11 +1,14 @@
-use axum::Json;
+use axum::{Json, http::StatusCode};
+use serde_json::json;
 
 use crate::models::backend_plan::BackendPlanResponse;
 use crate::models::blueprint::BlueprintResponse;
 use crate::models::file_plan::FrontendPlanResponse;
 use crate::models::generated_code::CodePreviewResponse;
+use crate::models::generated_project::GeneratedProjectResponse;
 use crate::models::intent::{IntentRequest, IntentResponse};
 use crate::models::project_plan::ProjectPlanResponse;
+use crate::services::file_writer::generate_project_from_prompt;
 use crate::services::planner::{
     build_backend_plan_response, build_blueprint_response, build_code_preview_response,
     build_frontend_plan_response, build_intent_response, build_project_plan_response,
@@ -132,4 +135,37 @@ pub async fn generate_code_preview(
 ) -> Json<CodePreviewResponse> {
     let response = build_code_preview_response(&payload.prompt);
     Json(response)
+}
+
+#[utoipa::path(
+    post,
+    path = "/ai/generate-project",
+    request_body = IntentRequest,
+    responses(
+        (
+            status = 200,
+            description = "Generate project files from user prompt",
+            body = GeneratedProjectResponse
+        ),
+        (
+            status = 500,
+            description = "Failed to generate project files"
+        )
+    ),
+    tag = "BuildX AI"
+)]
+
+pub async fn generate_project(
+    Json(payload): Json<IntentRequest>,
+) -> Result<Json<GeneratedProjectResponse>, (StatusCode, Json<serde_json::Value>)> {
+    match generate_project_from_prompt(&payload.prompt) {
+        Ok(response) => Ok(Json(response)),
+        Err(error) => Err((
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(json!({
+                "message": "Failed to generate project files",
+                "error": error.to_string()
+            })),
+        )),
+    }
 }
