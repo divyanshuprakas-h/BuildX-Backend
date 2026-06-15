@@ -8,7 +8,6 @@ use crate::models::generated_project::GeneratedProjectResponse;
 use crate::models::intent::{IntentRequest, IntentResponse};
 use crate::models::project_plan::ProjectPlanResponse;
 
-
 use crate::routes::ai::{
     __path_detect_intent, __path_generate_backend_plan, __path_generate_blueprint,
     __path_generate_code_preview, __path_generate_frontend_plan, __path_generate_project,

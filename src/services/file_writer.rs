@@ -1,8 +1,11 @@
 use std::{
-    fs, io,
+    fs::{self, File},
+    io::{self, Read, Write},
     path::{Component, Path, PathBuf},
     time::{SystemTime, UNIX_EPOCH},
 };
+
+use zip::{CompressionMethod, ZipWriter, write::FileOptions};
 
 use crate::models::generated_project::GeneratedProjectResponse;
 use crate::services::planner::build_code_preview_response;
@@ -16,7 +19,9 @@ pub fn generate_project_from_prompt(prompt_input: &str) -> io::Result<GeneratedP
         .as_secs();
 
     let project_name = format!("buildx_app_{}", timestamp);
-    let project_root = PathBuf::from("generated_apps").join(&project_name);
+    let generated_apps_dir = PathBuf::from("generated_apps");
+    let project_root = generated_apps_dir.join(&project_name);
+    let zip_path = generated_apps_dir.join(format!("{}.zip", project_name));
 
     fs::create_dir_all(&project_root)?;
 
@@ -33,11 +38,14 @@ pub fn generate_project_from_prompt(prompt_input: &str) -> io::Result<GeneratedP
         files_written.push(file.path);
     }
 
+    create_zip_from_folder(&project_root, &zip_path)?;
+
     Ok(GeneratedProjectResponse {
         project_name,
         project_path: project_root.to_string_lossy().to_string(),
+        zip_path: zip_path.to_string_lossy().to_string(),
         files_written,
-        summary: "Project files generated successfully.".to_string(),
+        summary: "Project files and ZIP generated successfully.".to_string(),
     })
 }
 
@@ -57,4 +65,49 @@ fn safe_join(root: &Path, relative_path: &str) -> io::Result<PathBuf> {
     }
 
     Ok(root.join(path))
+}
+
+fn create_zip_from_folder(folder_path: &Path, zip_path: &Path) -> io::Result<()> {
+    let zip_file = File::create(zip_path)?;
+    let mut zip = ZipWriter::new(zip_file);
+
+    let options = FileOptions::default().compression_method(CompressionMethod::Stored);
+
+    add_folder_to_zip(folder_path, folder_path, &mut zip, options)?;
+
+    zip.finish()?;
+
+    Ok(())
+}
+
+fn add_folder_to_zip(
+    base_path: &Path,
+    current_path: &Path,
+    zip: &mut ZipWriter<File>,
+    options: FileOptions,
+) -> io::Result<()> {
+    for entry in fs::read_dir(current_path)? {
+        let entry = entry?;
+        let path = entry.path();
+
+        if path.is_dir() {
+            add_folder_to_zip(base_path, &path, zip, options)?;
+        } else {
+            let relative_path = path
+                .strip_prefix(base_path)
+                .map_err(|error| io::Error::new(io::ErrorKind::Other, error.to_string()))?;
+
+            let zip_file_name = relative_path.to_string_lossy().replace('\\', "/");
+
+            zip.start_file(zip_file_name, options)?;
+
+            let mut file = File::open(&path)?;
+            let mut buffer = Vec::new();
+
+            file.read_to_end(&mut buffer)?;
+            zip.write_all(&buffer)?;
+        }
+    }
+
+    Ok(())
 }
