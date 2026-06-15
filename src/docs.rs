@@ -13,6 +13,8 @@ use crate::routes::ai::{
     __path_generate_code_preview, __path_generate_frontend_plan, __path_generate_project,
     __path_generate_project_plan,
 };
+
+use crate::routes::download::__path_download_zip;
 use crate::routes::health::__path_health_check;
 
 #[derive(OpenApi)]
@@ -26,6 +28,7 @@ use crate::routes::health::__path_health_check;
         generate_project_plan,
         generate_code_preview,
         generate_project,
+        download_zip,
     ),
     components(
         schemas(
@@ -46,7 +49,8 @@ use crate::routes::health::__path_health_check;
     ),
     tags(
         (name = "Health", description = "Backend health check endpoints"),
-        (name = "BuildX AI", description = "AI planning endpoints for BuildX")
+        (name = "BuildX AI", description = "AI planning endpoints for BuildX"),
+        (name = "Download", description = "Project ZIP download endpoints"),
     )
 )]
 
