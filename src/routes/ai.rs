@@ -8,11 +8,11 @@ use crate::models::generated_code::CodePreviewResponse;
 use crate::models::generated_project::GeneratedProjectResponse;
 use crate::models::intent::{IntentRequest, IntentResponse};
 use crate::models::project_plan::ProjectPlanResponse;
-use crate::services::file_writer::generate_project_from_prompt;
 use crate::services::planner::{
     build_backend_plan_response, build_blueprint_response, build_code_preview_response,
     build_frontend_plan_response, build_intent_response, build_project_plan_response,
 };
+use crate::services::project_generator::generate_project_from_prompt;
 
 #[utoipa::path(
     post,

@@ -7,14 +7,16 @@ use std::{
 
 use zip::{CompressionMethod, ZipWriter, write::FileOptions};
 
-use crate::models::generated_project::{
-    GeneratedProjectListItem, GeneratedProjectResponse, GeneratedProjectsListResponse,
+use crate::models::{
+    generated_code::CodePreviewResponse,
+    generated_project::{
+        GeneratedProjectListItem, GeneratedProjectResponse, GeneratedProjectsListResponse,
+    },
 };
-use crate::services::planner::build_code_preview_response;
 
-pub fn generate_project_from_prompt(prompt_input: &str) -> io::Result<GeneratedProjectResponse> {
-    let code_preview = build_code_preview_response(prompt_input);
-
+pub fn write_generated_project(
+    code_preview: CodePreviewResponse,
+) -> io::Result<GeneratedProjectResponse> {
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .expect("System time is before UNIX epoch")
@@ -127,7 +129,7 @@ pub fn list_generated_projects() -> io::Result<GeneratedProjectsListResponse> {
         return Ok(GeneratedProjectsListResponse {
             total: 0,
             projects: Vec::new(),
-            summary: "No generated projects found..".to_string(),
+            summary: "No generated projects found.".to_string(),
         });
     }
 
@@ -152,6 +154,7 @@ pub fn list_generated_projects() -> io::Result<GeneratedProjectsListResponse> {
         }
 
         let project_name = zip_name.trim_end_matches(".zip").to_string();
+
         projects.push(GeneratedProjectListItem {
             project_name,
             zip_name: zip_name.clone(),
