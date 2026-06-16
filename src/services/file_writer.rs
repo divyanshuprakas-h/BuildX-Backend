@@ -19,9 +19,12 @@ pub fn generate_project_from_prompt(prompt_input: &str) -> io::Result<GeneratedP
         .as_secs();
 
     let project_name = format!("buildx_app_{}", timestamp);
+    let zip_file_name = format!("{}.zip", project_name);
+
     let generated_apps_dir = PathBuf::from("generated_apps");
     let project_root = generated_apps_dir.join(&project_name);
-    let zip_path = generated_apps_dir.join(format!("{}.zip", project_name));
+    let zip_path = generated_apps_dir.join(&zip_file_name);
+    let download_url = format!("/download/{}", zip_file_name);
 
     fs::create_dir_all(&project_root)?;
 
@@ -44,6 +47,7 @@ pub fn generate_project_from_prompt(prompt_input: &str) -> io::Result<GeneratedP
         project_name,
         project_path: project_root.to_string_lossy().to_string(),
         zip_path: zip_path.to_string_lossy().to_string(),
+        download_url,
         files_written,
         summary: "Project files and ZIP generated successfully.".to_string(),
     })
