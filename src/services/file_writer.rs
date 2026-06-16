@@ -49,6 +49,8 @@ pub fn generate_project_from_prompt(prompt_input: &str) -> io::Result<GeneratedP
         zip_path: zip_path.to_string_lossy().to_string(),
         download_url,
         files_written,
+        run_commands: vec!["npm install".to_string(), "npm run dev".to_string()],
+        preview_entry: "src/App.jsx".to_string(),
         summary: "Project files and ZIP generated successfully.".to_string(),
     })
 }
