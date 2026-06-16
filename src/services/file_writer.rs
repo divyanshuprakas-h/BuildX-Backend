@@ -7,7 +7,9 @@ use std::{
 
 use zip::{CompressionMethod, ZipWriter, write::FileOptions};
 
-use crate::models::generated_project::GeneratedProjectResponse;
+use crate::models::generated_project::{
+    GeneratedProjectListItem, GeneratedProjectResponse, GeneratedProjectsListResponse,
+};
 use crate::services::planner::build_code_preview_response;
 
 pub fn generate_project_from_prompt(prompt_input: &str) -> io::Result<GeneratedProjectResponse> {
@@ -116,4 +118,53 @@ fn add_folder_to_zip(
     }
 
     Ok(())
+}
+
+pub fn list_generated_projects() -> io::Result<GeneratedProjectsListResponse> {
+    let generated_apps_dir = PathBuf::from("generated_apps");
+
+    if !generated_apps_dir.exists() {
+        return Ok(GeneratedProjectsListResponse {
+            total: 0,
+            projects: Vec::new(),
+            summary: "No generated projects found..".to_string(),
+        });
+    }
+
+    let mut projects = Vec::new();
+
+    for entry in fs::read_dir(&generated_apps_dir)? {
+        let entry = entry?;
+        let path = entry.path();
+
+        if !path.is_file() {
+            continue;
+        }
+
+        let Some(file_name) = path.file_name() else {
+            continue;
+        };
+
+        let zip_name = file_name.to_string_lossy().to_string();
+
+        if !zip_name.ends_with(".zip") {
+            continue;
+        }
+
+        let project_name = zip_name.trim_end_matches(".zip").to_string();
+        projects.push(GeneratedProjectListItem {
+            project_name,
+            zip_name: zip_name.clone(),
+            zip_path: path.to_string_lossy().to_string(),
+            download_url: format!("/download/{}", zip_name),
+        });
+    }
+
+    projects.sort_by(|a, b| b.project_name.cmp(&a.project_name));
+
+    Ok(GeneratedProjectsListResponse {
+        total: projects.len(),
+        projects,
+        summary: "Generated projects fetched successfully.".to_string(),
+    })
 }

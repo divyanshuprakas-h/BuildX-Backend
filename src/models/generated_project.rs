@@ -12,3 +12,18 @@ pub struct GeneratedProjectResponse {
     pub preview_entry: String,
     pub summary: String,
 }
+
+#[derive(Debug, Serialize, ToSchema)]
+pub struct GeneratedProjectListItem {
+    pub project_name: String,
+    pub zip_name: String,
+    pub zip_path: String,
+    pub download_url: String,
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+pub struct GeneratedProjectsListResponse {
+    pub total: usize,
+    pub projects: Vec<GeneratedProjectListItem>,
+    pub summary: String,
+}

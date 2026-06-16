@@ -7,6 +7,7 @@ use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
 use crate::docs::ApiDoc;
+use crate::routes::generated_projects::list_generated_projects_handler;
 use crate::routes::{
     ai::{
         detect_intent, generate_backend_plan, generate_blueprint, generate_code_preview,
@@ -28,5 +29,6 @@ pub fn create_app() -> Router {
         .route("/ai/code-preview", post(generate_code_preview))
         .route("/ai/generate-project", post(generate_project))
         .route("/download/{zip_name}", get(download_zip))
+        .route("/projects/generated", get(list_generated_projects_handler))
         .merge(SwaggerUi::new("/docs").url("/api-docs/openapi.json", ApiDoc::openapi()))
 }

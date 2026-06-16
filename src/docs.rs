@@ -4,7 +4,9 @@ use crate::models::backend_plan::{BackendPlanItem, BackendPlanResponse};
 use crate::models::blueprint::{ApiRouteBlueprint, BlueprintResponse, PageBlueprint};
 use crate::models::file_plan::{FilePlanItem, FrontendPlanResponse};
 use crate::models::generated_code::{CodePreviewResponse, GeneratedFile};
-use crate::models::generated_project::GeneratedProjectResponse;
+use crate::models::generated_project::{
+    GeneratedProjectListItem, GeneratedProjectResponse, GeneratedProjectsListResponse,
+};
 use crate::models::intent::{IntentRequest, IntentResponse};
 use crate::models::project_plan::ProjectPlanResponse;
 
@@ -13,6 +15,7 @@ use crate::routes::ai::{
     __path_generate_code_preview, __path_generate_frontend_plan, __path_generate_project,
     __path_generate_project_plan,
 };
+use crate::routes::generated_projects::__path_list_generated_projects_handler;
 
 use crate::routes::download::__path_download_zip;
 use crate::routes::health::__path_health_check;
@@ -29,6 +32,7 @@ use crate::routes::health::__path_health_check;
         generate_code_preview,
         generate_project,
         download_zip,
+        list_generated_projects_handler
     ),
     components(
         schemas(
@@ -45,12 +49,15 @@ use crate::routes::health::__path_health_check;
             GeneratedFile,
             CodePreviewResponse,
             GeneratedProjectResponse,
+            GeneratedProjectListItem,
+            GeneratedProjectsListResponse,
         )
     ),
     tags(
         (name = "Health", description = "Backend health check endpoints"),
         (name = "BuildX AI", description = "AI planning endpoints for BuildX"),
         (name = "Download", description = "Project ZIP download endpoints"),
+        (name = "Generated Projects", description = "Generated project history endpoints")
     )
 )]
 
