@@ -158,7 +158,7 @@ pub async fn generate_code_preview(
 pub async fn generate_project(
     Json(payload): Json<IntentRequest>,
 ) -> Result<Json<GeneratedProjectResponse>, (StatusCode, Json<serde_json::Value>)> {
-    match generate_project_from_prompt(&payload.prompt) {
+    match generate_project_from_prompt(&payload.prompt).await {
         Ok(response) => Ok(Json(response)),
         Err(error) => Err((
             StatusCode::INTERNAL_SERVER_ERROR,
