@@ -1,4 +1,5 @@
 mod app;
+mod config;
 mod docs;
 mod models;
 mod routes;
@@ -8,6 +9,8 @@ use std::net::SocketAddr;
 
 #[tokio::main]
 async fn main() {
+    dotenvy::dotenv().ok();
+
     let app = app::create_app();
     let addr = SocketAddr::from(([127, 0, 0, 1], 8000));
 

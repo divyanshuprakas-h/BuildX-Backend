@@ -1,3 +1,4 @@
-/target
-
-generated_apps
+.env
+target/
+generated_apps/
+.DS_Store
