@@ -9,5 +9,5 @@ pub fn ai_api_key() -> Option<String> {
 }
 
 pub fn ai_model() -> String {
-    env::var("AI_MODEL").unwrap_or_else(|_| "default-model".to_string())
+    env::var("AI_MODEL").unwrap_or_else(|_| "gemini-3.5-flash".to_string())
 }
