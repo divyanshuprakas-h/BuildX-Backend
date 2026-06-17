@@ -1,12 +1,32 @@
 use std::io;
 
 use reqwest::Client;
+use serde::de::DeserializeOwned;
 use serde_json::{Value, json};
 
 use crate::config::{ai_api_key, ai_model, ai_provider};
-use crate::models::generated_code::CodePreviewResponse;
+use crate::models::generated_code::{CodePreviewResponse, GeneratedFile, GeneratedFileManifest};
 
-pub async fn generate_code_with_ai(ai_prompt: &str) -> io::Result<Option<CodePreviewResponse>> {
+pub async fn generate_manifest_with_ai(
+    ai_prompt: &str,
+) -> io::Result<Option<GeneratedFileManifest>> {
+    generate_json_with_gemini::<GeneratedFileManifest>(ai_prompt, "manifest").await
+}
+
+pub async fn generate_file_with_ai(ai_prompt: &str) -> io::Result<Option<GeneratedFile>> {
+    generate_json_with_gemini::<GeneratedFile>(ai_prompt, "file").await
+}
+
+pub async fn generate_code_bundle_with_ai(
+    ai_prompt: &str,
+) -> io::Result<Option<CodePreviewResponse>> {
+    generate_json_with_gemini::<CodePreviewResponse>(ai_prompt, "code_bundle").await
+}
+
+async fn generate_json_with_gemini<T>(ai_prompt: &str, response_name: &str) -> io::Result<Option<T>>
+where
+    T: DeserializeOwned,
+{
     let provider = ai_provider();
 
     if provider != "gemini" {
@@ -26,12 +46,18 @@ pub async fn generate_code_with_ai(ai_prompt: &str) -> io::Result<Option<CodePre
 
     let model = ai_model();
 
-    println!("Calling Gemini model: {}", model);
+    println!("Calling Gemini model: {} for {}", model, response_name);
 
     let api_url = format!(
         "https://generativelanguage.googleapis.com/v1beta/models/{}:generateContent",
         model
     );
+
+    let max_output_tokens = if response_name == "manifest" {
+        2048
+    } else {
+        8192
+    };
 
     let request_body = json!({
         "contents": [
@@ -45,7 +71,7 @@ pub async fn generate_code_with_ai(ai_prompt: &str) -> io::Result<Option<CodePre
         ],
         "generationConfig": {
             "temperature": 0.2,
-            "maxOutputTokens": 8192,
+            "maxOutputTokens": max_output_tokens,
             "responseMimeType": "application/json"
         }
     });
@@ -80,28 +106,22 @@ pub async fn generate_code_with_ai(ai_prompt: &str) -> io::Result<Option<CodePre
         return Ok(None);
     };
 
-    println!("Gemini output received.");
-    println!(
-        "Gemini output preview: {}",
-        output_text.chars().take(500).collect::<String>()
-    );
+    println!("Gemini {} output received.", response_name);
 
     let cleaned_json = clean_ai_json_output(&output_text);
 
-    let parsed_response: CodePreviewResponse = match serde_json::from_str(&cleaned_json) {
-        Ok(parsed) => parsed,
+    match serde_json::from_str::<T>(&cleaned_json) {
+        Ok(parsed) => Ok(Some(parsed)),
         Err(error) => {
-            println!("Failed to parse Gemini JSON: {}", error);
+            println!("Failed to parse Gemini {} JSON: {}", response_name, error);
             println!(
                 "Cleaned Gemini JSON preview: {}",
                 cleaned_json.chars().take(1000).collect::<String>()
             );
 
-            return Ok(None);
+            Ok(None)
         }
-    };
-
-    Ok(Some(parsed_response))
+    }
 }
 
 fn extract_gemini_output_text(response_json: &Value) -> Option<String> {
